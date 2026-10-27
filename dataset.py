@@ -260,6 +260,33 @@ async def search_anime(query: str, limit: int = 6) -> list[dict]:
     return out
 
 
+TRENDING_QUERY = """
+query ($perPage: Int) {
+  Page(perPage: $perPage) {
+    media(type: ANIME, sort: TRENDING_DESC, isAdult: false) {
+      id
+      title { romaji english native }
+      seasonYear
+      format
+    }
+  }
+}"""
+
+
+async def trending_anime(limit: int = 10) -> list[dict]:
+    """What AniList is buzzing about right now -> [{id, title, year, format}, ...]"""
+    async with httpx.AsyncClient(headers=HEADERS, timeout=20) as client:
+        try:
+            data = await _anilist(client, TRENDING_QUERY, {"perPage": limit})
+        except NotFound:
+            return []
+    out = []
+    for m in (data.get("Page") or {}).get("media") or []:
+        out.append(dict(id=m["id"], title=display_title(m), year=m.get("seasonYear"),
+                        format=(m.get("format") or "").replace("_", " ")))
+    return out
+
+
 # ======================================================================
 # 3. one loaded anime (raw AniList record + downloaded images)
 # ======================================================================

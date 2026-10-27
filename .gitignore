@@ -1,0 +1,19 @@
+# runtime downloads / caches (fetched on first start, see dataset.ensure_fonts)
+fonts/
+Templates/fonts/
+.cache/
+samples/
+data/
+
+# python
+__pycache__/
+*.py[cod]
+*.egg-info/
+.venv/
+venv/
+
+# env + session files
+.env
+*.session
+*.session-journal
+Templates/assets/

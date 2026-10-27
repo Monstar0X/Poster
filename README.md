@@ -1,259 +1,209 @@
-# 🎬 Anime Poster & Thumbnail Bot
+# 🎨 Anime Poster Studio Bot
 
 <div align="center">
 
-[![Python Version](https://img.shields.io/badge/Python-3.10%20%7C%203.11-3776AB?logo=python&logoColor=white)](https://www.python.org/)
+[![Python Version](https://img.shields.io/badge/Python-3.11-3776AB?logo=python&logoColor=white)](https://www.python.org/)
 [![Telegram](https://img.shields.io/badge/Telegram-Channel-2CA5E0?logo=telegram&logoColor=white)](https://t.me/cantarellabots)
 [![Support](https://img.shields.io/badge/Telegram-Support%20Chat-0088cc?logo=telegram&logoColor=white)](https://t.me/CantarellaBotschat)
 [![Library](https://img.shields.io/badge/Library-Kurigram%20%2F%20Pyrogram-blue)](https://github.com/Kurigram/Kurigram)
 [![Engine](https://img.shields.io/badge/Image%20Engine-Pillow-yellow)](https://python-pillow.org/)
 
-An advanced Telegram bot that transforms anime metadata from **AniList** and **fanart.tv** into **13 high-definition poster and thumbnail styles** with automated typography, character art selection, custom button presets, channel branding, and direct-to-channel broadcast publishing.
+A Telegram bot that turns any anime into **14 ready-to-post poster / thumbnail styles**, straight from AniList.
 
----
+Send a title, tap a style, fine-tune it, and download the full-quality PNG — or push it straight to your channel.
 
-### 📢 Official Channel & Credits
-Maintained and presented by **Cantarella Bots**:
-- **Main Channel**: [Cantarella Bots (@cantarellabots)](https://t.me/cantarellabots)
-- **Support Group**: [Cantarella Bots Chat (@CantarellaBotschat)](https://t.me/CantarellaBotschat)
-
----
+Every screen is a thumbnail photo with inline buttons and a way back home, so the whole thing feels like one app.
 
 </div>
 
-## ✨ Key Features
+---
 
-- **13 Professional Poster Styles**:
-  - Full HD (1920×1080) and HD (1280×720) layouts designed for anime release channels and indexing hubs.
-  - Diverse aesthetics: character PNG hero cards, streaming Netflix-style layouts, neon banners, minimal light cards, and bold typography.
-- **Dynamic Art & Character Selection**:
-  - Seamlessly cycles through transparent character cutouts from **fanart.tv** (or AniList cutout via `rembg`).
-  - Allows browsing and switching alternative official posters and high-resolution landscape banners from AniList.
-- **Custom Channel Branding**:
-  - Automatically renders your channel title or custom branding onto the poster using native typography, custom color palettes, and balanced two-tone typography.
-  - Automatically updates across all templates whenever you add your channel or edit your branding.
-- **Direct-to-Channel Publishing (`📣 Post to Channel`)**:
-  - Attach rich formatted captions with preserved Telegram entities (bold, italic, spoiler, custom emoji, blockquotes).
-  - Add custom inline URL buttons using simple syntax: `Text - https://link`.
-  - Preview before posting and broadcast directly to verified channels.
-- **Strict Channel Admin Verification**:
-  - Validates that the bot possesses requisite channel management rights.
-  - Ensures only channel owners and administrators can publish posters to their channels.
-- **Interactive UI & Live Previews**:
-  - Smooth Telegram menu navigation with styled inline buttons, small-caps styling, and real-time photo swaps.
-  - Built-in `/styles` viewer to flip through every style preview with caching.
-- **High-Quality Export**:
-  - Generates instant JPEG previews for chat interactions.
-  - One-click `📁 Full Quality File` button delivers uncompressed PNG files as documents.
-- **Multi-Layered Watermark Protection**:
-  - Cryptographically sealed branding (AES-256-GCM).
-  - Spread-spectrum invisible watermark verification (`watermark.py verify`).
-- **Flexible Storage Backends**:
-  - Auto-selects MongoDB (`motor`) if `MONGO_URI` is provided, otherwise falls back to local JSON storage (`data/users.json`).
-- **Production-Ready**:
-  - Built-in lightweight HTTP health-check server (`PORT`) for cloud container platforms (Render, Koyeb, Railway, Heroku).
-  - Pre-packaged `Dockerfile` with automatic Google Fonts download (`ensure_fonts`).
+## ✨ What's inside
+
+| Feature | What it does |
+| :--- | :--- |
+| 🎨 **14 poster styles** | Full HD (1920×1080), HD (1280×720) and 1600×900 designs, rendered live. |
+| 🖼️ **Dynamic artwork** | Cycle transparent fanart.tv character cut-outs, AniList posters and banners right from the buttons. |
+| 🔥 **Trending** | One tap shows what AniList is buzzing about, ready to turn into a poster. |
+| ⚙️ **Fine-tune** | Swap the character / artwork, change the button text, add your channel branding. |
+| 📁 **Full-quality export** | Instant JPEG preview in chat, plus a lossless PNG on demand. |
+| 📣 **Direct to channel** | Attach a rich caption (formatting and custom emoji preserved) and inline URL buttons, preview, then post. |
+
+> **Out of scope on purpose:** the moderation suite (bans, mutes, warns, locks, filters, welcome messages,
+> night mode, logging) and the link-provider feature are **not** part of this bot. This is a poster studio only.
 
 ---
 
-## 🤖 Bot Commands
+## 🕹️ How to use it
+
+1. **Send an anime name** — or tap 🔥 **trending** to pick from what's hot right now.
+2. **Choose a style** — tap a number, or browse with 👀 **previews**.
+3. **Fine-tune it** — ◀ ▶ flips styles, ⚙️ **options** swaps the art, the button text and your branding.
+4. **Take it away** — 📁 **full quality file** for the PNG, 📣 **post to channel** to publish it.
+
+Every screen keeps a 🏠 **home** button, so you can never get stuck.
+
+---
+
+## 🤖 Commands
 
 | Command | Description |
 | :--- | :--- |
-| `/start` | Launch the bot, initialize user session, and display the main menu |
-| `/help` | View command guide, usage tips, and support links |
-| `/poster <anime>` | Instantly search AniList and generate a poster for the specified anime |
-| `/styles` | Interactive carousel previewing all 13 styles |
-| `/addchnl` | Register a Telegram channel (bot must be administrator) |
-| `/mychnls` | List your registered channels with real-time rights validation |
+| `/start` | Home screen |
+| `/poster <anime>` | Make a poster for the given anime |
+| `/styles` | Preview every poster style, one by one |
+| `/trending` | What's hot on AniList right now |
+| `/help` | Command guide and support links |
+| `/addchnl` | Register **your** channel (bot must be full admin there) |
+| `/mychnls` | List your registered channels |
 | `/removechnl` | Unlink a registered channel |
 
-> **Tip**: You can also simply send any anime title directly in the private chat, and the bot will launch the search picker automatically!
+> Tip: send any anime title in the private chat and the bot opens the search picker automatically.
 
 ---
 
-## ⚙️ Configuration & Environment Variables
-
-Create a `.env` file or define these variables in your deployment environment:
-
-### 🔑 Essential Credentials
-
-| Variable | Description | Default | Required |
-| :--- | :--- | :--- | :---: |
-| `API_ID` | Telegram API ID from [my.telegram.org](https://my.telegram.org) | None | **Yes** |
-| `API_HASH` | Telegram API Hash from [my.telegram.org](https://my.telegram.org) | None | **Yes** |
-| `BOT_TOKEN` | Telegram Bot Token from [@BotFather](https://t.me/BotFather) | None | **Yes** |
-| `WATERMARK_KEY` | Secret master key used for sealing watermarks | None | Optional |
-
-### 🛠 Channels & Database Settings
-
-| Variable | Description | Default |
-| :--- | :--- | :--- |
-| `MONGO_URI` | MongoDB connection URI (e.g. `mongodb+srv://...`) | *Empty (uses JSON)* |
-| `MONGO_DB` | MongoDB database name | `poster_bot` |
-| `DATA_DIR` | Local storage folder for `users.json` when MongoDB is not configured | `./data` |
-| `MAX_CHANNELS` | Maximum channels a user can register | `5` |
-| `ALLOWED_USERS` | Comma-separated user IDs for private bot mode (leave blank for public access) | *Empty (public)* |
-
-### 🎨 Rendering & Art Options
-
-| Variable | Description | Default |
-| :--- | :--- | :--- |
-| `BRAND_TOP` | Top word for two-tone brand lockups (Styles 8 & 13) | `ANI` |
-| `BRAND_BOTTOM` | Bottom word for two-tone brand lockups (Styles 8 & 13) | `CROX` |
-| `FANART_API_KEY` | [fanart.tv](https://fanart.tv/) API key for character art | *Pre-configured* |
-| `TMDB_API_KEY` | TMDB API key used for fallback title matching | *Pre-configured* |
-| `USE_CHARACTER_PNG` | Enable fanart.tv transparent character search (`1` or `0`) | `1` |
-| `USE_ANILIST_CUTOUT` | Cut out AniList characters using `rembg` (`1` or `0`) | `0` |
-| `FANART_CANDIDATES` | Maximum fanart.tv transparent PNGs to fetch per anime | `15` |
-| `POSTER_CHOICES` | Maximum AniList alternative posters to index | `12` |
-| `BANNER_CHOICES` | Maximum AniList alternative landscape banners to index | `12` |
-| `RENDER_WORKERS` | Number of simultaneous background render workers | `2` |
-
-### 🌐 Links & Hosting
-
-| Variable | Description | Default |
-| :--- | :--- | :--- |
-| `MAIN_CHANNEL_URL` | Channel link displayed in the help menu | `https://t.me/cantarellabots` |
-| `SUPPORT_URL` | Support chat link displayed in the help menu | `https://t.me/CantarellaBotschat` |
-| `PORT` | Health-check port (binds `0.0.0.0:PORT` when set > 0) | `0` (disabled) |
-| `LOG_LEVEL` | Logging level (`INFO`, `DEBUG`, `WARNING`, `ERROR`) | `INFO` |
-
----
-
-## 🚀 Installation & Local Setup
-
-### 1. Clone the Repository
+## 🚀 Quick start
 
 ```bash
-git clone https://github.com/abhinai2244/Anime-Poster-Bot
-cd Anime-Poster-Bot
-```
-
-### 2. Set Up a Python Virtual Environment
-
-```bash
-python -m venv venv
-
-# Windows:
-.\venv\Scripts\activate
-
-# Linux / macOS:
-source venv/bin/activate
-```
-
-### 3. Install Dependencies
-
-```bash
+git clone <your-repo-url>
+cd Poster
+python -m venv venv && source venv/bin/activate   # Windows: .\venv\Scripts\activate
 pip install -r requirements.txt
-```
 
-### 4. Configure Environment Variables
-
-Create an environment file or set variables directly:
-
-```bash
-# Linux/macOS
 export API_ID=1234567
-export API_HASH="your_api_hash_here"
-export BOT_TOKEN="123456:ABC-DEF1234ghIkl-zyx57W2v1u123ew11"
+export API_HASH="your_api_hash"
+export BOT_TOKEN="123456:ABC-DEF..."
 
-# Windows PowerShell
-$env:API_ID="1234567"
-$env:API_HASH="your_api_hash_here"
-$env:BOT_TOKEN="123456:ABC-DEF1234ghIkl-zyx57W2v1u123ew11"
+python main.py
 ```
 
-### 5. Download Required Fonts
-
-The bot checks and downloads required Google Fonts automatically on first start, but you can trigger it in advance:
+The bot downloads its fonts on first start (into both `fonts/` and `Templates/fonts/`), so the very first
+run needs network access. To fetch them in advance:
 
 ```bash
 python -c "import dataset; print('Missing fonts:', dataset.ensure_fonts())"
 ```
 
-### 6. Run the Bot
+---
+
+## ⚙️ Configuration
+
+Create a `.env` file or set these in your deployment environment.
+
+### 🔑 Required
+
+| Variable | Description |
+| :--- | :--- |
+| `API_ID` | Telegram API ID from [my.telegram.org](https://my.telegram.org) |
+| `API_HASH` | Telegram API Hash from [my.telegram.org](https://my.telegram.org) |
+| `BOT_TOKEN` | Bot token from [@BotFather](https://t.me/BotFather) |
+
+### 🤖 Identity
+
+| Variable | Description | Default |
+| :--- | :--- | :--- |
+| `BOT_NAME` | Display name | `Anime Poster Bot` |
+| `ADMIN_ID` | Owner user id | `0` |
+
+### 🗄️ Storage
+
+| Variable | Description | Default |
+| :--- | :--- | :--- |
+| `MONGO_URI` | MongoDB URI. Empty = local JSON under `DATA_DIR` | *Empty* |
+| `MONGO_DB` | MongoDB database name | `poster_bot` |
+| `DATA_DIR` | Folder for the JSON stores | `./data` |
+| `MAX_CHANNELS` | Channels one user may register for posting | `5` |
+
+### 🎨 Rendering
+
+| Variable | Description | Default |
+| :--- | :--- | :--- |
+| `BRAND_TOP` / `BRAND_BOTTOM` | Two-tone brand lockup (styles 8 & 13) | `ANI` / `CROX` |
+| `FANART_API_KEY` | [fanart.tv](https://fanart.tv/) key for character art | *Pre-configured* |
+| `TMDB_API_KEY` | TMDB key for fallback title matching | *Pre-configured* |
+| `USE_CHARACTER_PNG` | Enable fanart.tv transparent character search | `1` |
+| `USE_ANILIST_CUTOUT` | Cut out AniList characters with `rembg` | `0` |
+| `POSTER_CHOICES` / `BANNER_CHOICES` | Alternative posters / banners to index | `12` / `12` |
+| `RENDER_WORKERS` | Simultaneous render workers | `2` |
+
+### 🌐 Server
+
+| Variable | Description | Default |
+| :--- | :--- | :--- |
+| `MAIN_CHANNEL_URL` / `SUPPORT_URL` | Links shown in the help menu | Cantarella Bots |
+| `PORT` | Health-check port (binds `0.0.0.0:PORT` when `> 0`) | `0` (off) |
+| `LOG_LEVEL` | `INFO`, `DEBUG`, `WARNING`, `ERROR` | `INFO` |
+| `ALLOWED_USERS` | Comma-separated ids for private-bot mode (blank = public) | *Empty* |
+
+---
+
+## 🐳 Docker
 
 ```bash
-python main.py
+docker build -t anime-bot .
+docker run -d --name anime-bot --restart unless-stopped \
+  -e API_ID=1234567 -e API_HASH=... -e BOT_TOKEN=... \
+  -e ADMIN_ID=123456789 -e MONGO_URI="mongodb+srv://..." -e PORT=8080 \
+  -p 8080:8080 anime-bot
 ```
+
+A `Procfile` (`worker: python main.py`) is included for Heroku-style hosts. On Render / Koyeb / Railway set
+the start command to `python main.py` and `PORT=8080` to switch on the health-check server.
+
+The image deliberately uses **Python 3.11** (not the newest release) and pins every dependency, because the
+Kurigram/Pyrogram MTProto stack is best tested there. `numpy` is held below 2.5 for the same reason — 2.5+
+requires Python 3.12+. A `.dockerignore` keeps `.env`, session files and runtime data out of the image.
 
 ---
 
-## 🐳 Docker Deployment
-
-The project includes an optimized `Dockerfile` based on `python:3.11-slim`:
-
-### Build Docker Image
+## 🧪 Tests
 
 ```bash
-docker build -t anime-poster-bot .
+pip install pytest
+python -m pytest test_ui.py -v
 ```
 
-### Run Container
+The suite covers the interface: every keyboard is checked for a way back home, the style grid is checked to
+list all 14 styles, and the inline-button router is driven with real callback data to prove each button
+reaches the right screen.
+
+---
+
+## 🗂️ Project layout
+
+```
+Poster/
+├── main.py            # entry point: health server, client, handler registration
+├── config.py          # all environment settings
+├── cmds.py            # poster studio: commands, style picker, poster buttons
+├── chnl.py            # channel registration + 📣 post-to-channel flow
+├── chstore.py         # poster-studio channel storage (MongoDB or JSON)
+├── dataset.py         # AniList + fanart.tv data, font download, render dispatch
+├── chname.py          # channel branding typography
+├── watermark.py       # watermark seal / verify tool
+├── ui.py              # small-caps styling + button/keyboard helpers
+├── Templates/         # the 14 poster renderers
+└── test_ui.py         # interface + router tests
+```
+
+---
+
+## 🔒 Watermark tools
 
 ```bash
-docker run -d \
-  --name poster-bot \
-  --restart unless-stopped \
-  -e API_ID="1234567" \
-  -e API_HASH="your_api_hash" \
-  -e BOT_TOKEN="your_bot_token" \
-  -e MONGO_URI="mongodb+srv://..." \
-  -e PORT="8080" \
-  -p 8080:8080 \
-  anime-poster-bot
+python watermark.py newkey                 # generate a WATERMARK_KEY
+python watermark.py seal "Your Brand"      # seal text with the key
+python watermark.py verify poster.png      # check an image for your signature
 ```
 
 ---
 
-## ☁️ Cloud Platform Deployment
+## 👥 Credits
 
-### Deploy to Heroku
-A `Procfile` is included:
-```text
-worker: python main.py
-```
-1. Create a new Heroku app.
-2. In **Settings** > **Config Vars**, add `API_ID`, `API_HASH`, `BOT_TOKEN`, and `MONGO_URI`.
-3. Connect your Git repository and deploy.
-4. Ensure the `worker` dyno is turned ON in the **Resources** tab.
-
-### Deploy to Render / Koyeb / Railway
-1. Set the build command: `pip install -r requirements.txt`
-2. Set the start command: `python main.py`
-3. Set the environment variable `PORT=8080` (or the port required by your host) to activate the internal health-check server.
-4. Add your Telegram credentials (`API_ID`, `API_HASH`, `BOT_TOKEN`).
-
----
-
-## 🛡️ Watermark & Security Tools
-
-The `watermark.py` utility allows inspecting, creating keys, and verifying posters:
-
-```bash
-# Generate a fresh random WATERMARK_KEY
-python watermark.py newkey
-
-# Seal custom text using WATERMARK_KEY
-python watermark.py seal "Cantarella Bots"
-
-# Verify if an image contains your invisible spread-spectrum signature
-python watermark.py verify poster.png
-```
-
----
-
-## 👥 Credits & Channel Links
-
-- **Main Channel**: [Cantarella Bots (@cantarellabots)](https://t.me/cantarellabots)
-- **Community Chat**: [Cantarella Bots Chat (@CantarellaBotschat)](https://t.me/CantarellaBotschat)
-- **Data Providers**:
-  - [AniList GraphQL API](https://anilist.gitbook.io/anilist-apiv2-docs/) for media metadata and covers.
-  - [fanart.tv](https://fanart.tv/) for transparent anime character PNGs.
-- **Telegram Framework**: Built with [Kurigram / Pyrogram](https://github.com/Kurigram/Kurigram).
-
----
+- **Main channel**: [Cantarella Bots (@cantarellabots)](https://t.me/cantarellabots)
+- **Support chat**: [Cantarella Bots Chat (@CantarellaBotschat)](https://t.me/CantarellaBotschat)
+- **Data**: [AniList GraphQL API](https://anilist.gitbook.io/anilist-apiv2-docs/) · [fanart.tv](https://fanart.tv/)
+- **Framework**: [Kurigram / Pyrogram](https://github.com/Kurigram/Kurigram)
 
 <div align="center">
 Made with ❤️ by <a href="https://t.me/cantarellabots"><b>Cantarella Bots</b></a>

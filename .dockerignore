@@ -1,0 +1,25 @@
+# secrets - must never end up in an image layer
+.env
+*.session
+*.session-journal
+
+# runtime state + caches
+data/
+__pycache__/
+*.py[cod]
+.pytest_cache/
+.mypy_cache/
+.ruff_cache/
+
+# fonts are fetched during the build (and again at start-up if needed).
+# /fonts/ is the runtime-downloaded dir only - Templates/fonts is committed and must ship.
+/fonts/
+
+# vcs / docs / local tooling
+.git/
+.gitignore
+AGENTS.md
+tests/
+test_*.py
+*.md
+README*

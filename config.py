@@ -4,6 +4,20 @@ import os
 import re
 from pathlib import Path
 
+BASE_DIR = Path(__file__).resolve().parent
+
+
+def _load_env_file() -> None:
+    """Load .env if python-dotenv is available (optional - real env vars always win)."""
+    try:
+        from dotenv import load_dotenv
+    except ImportError:
+        return
+    load_dotenv(BASE_DIR / ".env", override=False)
+
+
+_load_env_file()
+
 
 def _get(name: str, default: str = "") -> str:
     return os.environ.get(name, default).strip()
@@ -20,13 +34,15 @@ def _ids(name: str) -> set[int]:
     return {int(x) for x in re.split(r"[,\s]+", _get(name)) if x.isdigit()}
 
 
-BASE_DIR = Path(__file__).resolve().parent
-
 # ---------------------------------------------------------------- telegram (Kurigram)
 API_ID = _int("API_ID", "")                                  # https://my.telegram.org
 API_HASH = _get("API_HASH", "")
 BOT_TOKEN = _get("BOT_TOKEN", "") or _get("TELEGRAM_BOT_TOKEN")  # @BotFather
 ALLOWED_USERS = _ids("ALLOWED_USERS")                       # comma separated ids; empty = everybody
+
+# ---------------------------------------------------------------- identity + staff
+BOT_NAME = _get("BOT_NAME", "Anime Poster Bot")
+ADMIN_ID = _int("ADMIN_ID", 0)                              # owner id, shown in /profile
 
 # ---------------------------------------------------------------- links + images (/start, /help)
 MAIN_CHANNEL_URL = _get("MAIN_CHANNEL_URL", "https://t.me/cantarellabots")
@@ -79,7 +95,7 @@ REMBG_MODEL = _get("REMBG_MODEL")                           # empty = template d
 # ---------------------------------------------------------------- channels (/addchnl, post button, branding)
 # where users' channels are kept. Heroku wipes local files on every restart -> set MONGO_URI there (needs `motor`).
 DATA_DIR = Path(_get("DATA_DIR") or (BASE_DIR / "data"))
-MONGO_URI = _get("MONGO_URI", "")                               # empty = a json file in DATA_DIR
+MONGO_URI = _get("MONGO_URI") or _get("MONGO_DB_URI", "")   # empty = a json file in DATA_DIR
 MONGO_DB = _get("MONGO_DB", "poster_bot")
 MAX_CHANNELS = _int("MAX_CHANNELS", 5)                      # channels one user may add
 # the bot must hold ALL of these admin rights in a channel before it is accepted (override: comma separated names)
