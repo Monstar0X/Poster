@@ -1,239 +1,49 @@
-import math
-import os
-from PIL import Image, ImageChops, ImageDraw, ImageFont
+"""Style 14 - "Nova Pastel Hero": Grand Blue (Nova7) + Golden Boy (Nova8) combined into one.  Album poster on the left,
+white page on the right with the top bar (menu, search, avatar), bold title, score + studio row, outlined genre pills +
+"Avg Ratings", light caps synopsis, black button + bookmark.  Uses: AniList poster."""
+import sys, os
+sys.path.insert(0, os.path.dirname(os.path.abspath(__file__))) if "__file__" in globals() else None
+from nova_kit import *  # noqa
 
-# ---------------------------------------------------------------- settings
-S = 2                                    # draw at 2x, shrink at the end
-W, H = 1280, 720
-
-WHITE = (255, 255, 255)
-PEACH = (248, 221, 211)
-TEAL = (17, 55, 69)                      # title colour
-SAGE = (104, 128, 118)                   # bar + brand
-TAN = (196, 150, 112)
-INK = (28, 28, 34)
-TERRA = (178, 96, 70)                    # warm accent: title line 2, highlights
-BTN1, BTN2 = (206, 134, 96), (166, 88, 64)           # button gradient (light -> deep)
-CHIP, CHIP_LINE, CHIP_TEXT = (252, 238, 231), (238, 208, 196), (98, 118, 108)
-BOX, BOX_LINE = (253, 243, 238), (238, 208, 196)
-BODY = (30, 60, 72)
-
-ART_X, ART_W = 58, 510                   # art panel (broader frame; height follows the crop)
-TEXT_X = 640                             # one left edge for every text element
-BOX_W = 500
-
-# ------------------------------------------------------------------- fonts
-FONT_DIRS = ["/usr/share/fonts/truetype/google-fonts/",
-             "/usr/share/fonts/truetype/dejavu/",
-             os.path.expanduser("~/.fonts/"), "fonts/"]
-FALLBACKS = {"Poppins-BoldItalic.ttf": "DejaVuSans-BoldOblique.ttf",
-             "Poppins-Regular.ttf": "DejaVuSans.ttf",
-             "Poppins-Medium.ttf": "DejaVuSans-Bold.ttf",
-             "Poppins-Bold.ttf": "DejaVuSans-Bold.ttf",
-             "Lora-Italic-Variable.ttf": "DejaVuSerif-Italic.ttf"}
+INK, GREY, LINE = (14, 14, 18), (150, 150, 158), (210, 210, 216)
 
 
-def font(name, size, weight=None):
-    """Load a font at `size` (1x units); `weight` is for variable fonts."""
-    for cand in (name, FALLBACKS.get(name)):
-        for folder in FONT_DIRS:
-            path = os.path.join(folder, cand or "")
-            if cand and os.path.exists(path):
-                f = ImageFont.truetype(path, int(size * S))
-                if weight and "Variable" in cand:
-                    try:
-                        f.set_variation_by_axes([weight])
-                    except Exception:
-                        pass
-                return f
-    return ImageFont.load_default()
-
-
-def sp(v):
-    return int(v * S)
-
-
-# ----------------------------------------------------------------- helpers
-def line(d, pts, color, width):
-    d.line([(sp(x), sp(y)) for x, y in pts], fill=color, width=sp(width), joint="curve")
-
-
-def rect(d, box, fill, radius=0):
-    x0, y0, x1, y1 = box
-    if radius:
-        d.rounded_rectangle([sp(x0), sp(y0), sp(x1), sp(y1)], radius=sp(radius), fill=fill)
-    else:
-        d.rectangle([sp(x0), sp(y0), sp(x1), sp(y1)], fill=fill)
-
-
-def spaced(d, x, y, text, f, fill, gap):
-    for ch in text:
-        d.text((sp(x), sp(y)), ch, font=f, fill=fill)
-        x += d.textlength(ch, font=f) / S + gap
-
-
-def art_panel():
-    """Crop the artwork; arched top-left corner, softly rounded others."""
-    src = Image.open(source.ART_SOURCE).convert("RGB").crop(source.ART_CROP)
-    h = ART_W * src.height / src.width
-    art = src.resize((sp(ART_W), sp(h)), Image.LANCZOS)
-    soft = Image.new("L", art.size, 0)
-    ImageDraw.Draw(soft).rounded_rectangle([0, 0, art.width - 1, art.height - 1], radius=sp(24), fill=255)
-    arch = Image.new("L", art.size, 0)
-    ImageDraw.Draw(arch).rounded_rectangle([0, 0, art.width - 1, art.height - 1], radius=sp(110),
-                                           fill=255, corners=(True, False, False, False))
-    return art, ImageChops.multiply(soft, arch), h
-
-
-# ------------------------------------------------------------------ pieces
-def star(d, cx, cy, r, color):
-    """Four-point sparkle."""
-    k = 0.24
-    pts = [(0, -r), (k * r, -k * r), (r, 0), (k * r, k * r), (0, r), (-k * r, k * r), (-r, 0), (-k * r, -k * r)]
-    d.polygon([(sp(cx + x), sp(cy + y)) for x, y in pts], fill=color)
-
-
-def burst(d, cx, cy, r, color, rays=8):
-    for i in range(rays):
-        ang = 2 * math.pi * i / rays
-        line(d, [(cx + 0.38 * r * math.cos(ang), cy + 0.38 * r * math.sin(ang)),
-                 (cx + r * math.cos(ang), cy + r * math.sin(ang))], color, 3.2)
-
-
-def dots(d, x, y, cols, rows, color, gap=14):
-    for r_ in range(rows):
-        for c_ in range(cols):
-            cx, cy = x + c_ * gap, y + r_ * gap
-            d.ellipse([sp(cx - 2.3), sp(cy - 2.3), sp(cx + 2.3), sp(cy + 2.3)], fill=color)
-
-
-def ring(d, cx, cy, r, color, w=2):
-    d.ellipse([sp(cx - r), sp(cy - r), sp(cx + r), sp(cy + r)], outline=color, width=sp(w))
-
-
-def tile(d, x, y, size, color, w=2):
-    d.rounded_rectangle([sp(x), sp(y), sp(x + size), sp(y + size)], radius=sp(size * 0.28), outline=color, width=sp(w))
-
-
-def draw_background(d):
-    rect(d, (0, 0, 600, 460), PEACH)                                 # peach block (ends before the text column)
-    d.ellipse([sp(930), sp(520), sp(1430), sp(1020)], fill=PEACH)    # big soft circle, bottom right
-
-
-def draw_decor(d):
-    """Small accents in the poster's own colours, kept clear of text and art."""
-    dots(d, 60, 26, 4, 5, TAN)
-    star(d, 200, 46, 14, SAGE)
-    star(d, 300, 28, 8, TERRA)
-    ring(d, 395, 52, 7, TAN)
-    star(d, 760, 52, 14, TERRA)
-    burst(d, 880, 74, 28, TAN)
-    star(d, 1030, 40, 9, SAGE)
-    dots(d, 1090, 118, 5, 4, TAN)
-    tile(d, 1160, 190, 44, TERRA)
-    star(d, 1232, 360, 10, TAN)
-    star(d, 1214, 440, 7, SAGE)
-    star(d, 120, 676, 12, SAGE)
-    ring(d, 230, 688, 8, TAN)
-    tile(d, 300, 654, 38, TERRA)
-    dots(d, 400, 664, 5, 3, TAN)
-    ring(d, 1090, 610, 8, SAGE)
-
-
-def draw_header(d):
-    # menu icon (three bars with a dot)
-    for y in (42, 54, 66):
-        rect(d, (1208, y, 1244, y + 6), INK)
-        rect(d, (1250, y, 1256, y + 6), INK)
-
-
-def wrap(d, text, f, max_w):
-    lines, cur = [], ""
-    for word in text.split():
-        trial = (cur + " " + word).strip()
-        if cur and d.textlength(trial, font=f) / S > max_w:
-            lines.append(cur)
-            cur = word
-        else:
-            cur = trial
-    return lines + [cur]
-
-
-def gradient_pill(img, box, c1, c2):
-    """Horizontal gradient inside a fully rounded pill."""
-    x0, y0, x1, y1 = [sp(v) for v in box]
-    size = (x1 - x0, y1 - y0)
-    grad = Image.linear_gradient("L").rotate(90, expand=True).resize(size)
-    fill = Image.composite(Image.new("RGB", size, c2), Image.new("RGB", size, c1), grad)
-    mask = Image.new("L", size, 0)
-    ImageDraw.Draw(mask).rounded_rectangle([0, 0, size[0] - 1, size[1] - 1], radius=size[1] // 2, fill=255)
-    img.paste(fill, (x0, y0), mask)
-
-
-def draw_content(img, d, a, cy):
-    """Title, chips, synopsis box and button, stacked and centred on the art."""
-    tf = font("Lora-Italic-Variable.ttf", 76, 700)
-    cf = font("Poppins-Bold.ttf", 12.5)
-    rf, mf = font("Poppins-Regular.ttf", 14.5), font("Poppins-Medium.ttf", 14.5)
-    pad, lh = 18, 24
-    hot = {w.lower() for w in a["highlight_words"]}
-    lines = wrap(d, a["synopsis"], rf, BOX_W - 2 * pad)
-    box_h = len(lines) * lh + 2 * pad - 6
-    title_h, chip_h, btn_h = 88 * len(a["title_lines"]) - 10, 34, 44
-    total = title_h + 28 + chip_h + 24 + box_h + 26 + btn_h
-    y = cy - total / 2 - 22                              # centred on the art panel
-    # title: first line dark, last line in the accent colour
-    for i, text in enumerate(a["title_lines"]):
-        col = TEAL if i < len(a["title_lines"]) - 1 else TERRA
-        d.text((sp(TEXT_X), sp(y)), text, font=tf, fill=col, stroke_width=sp(0.5), stroke_fill=col)
-        y += 88
-    y += 28 - 10 + 22
-    # genre chips
-    x = TEXT_X
-    for tag in a["tags"]:
-        w = d.textlength(tag, font=cf) / S + 30
-        d.rounded_rectangle([sp(x), sp(y), sp(x + w), sp(y + chip_h)], radius=sp(6),
-                            fill=CHIP, outline=CHIP_LINE, width=S)
-        d.text((sp(x + 15), sp(y + chip_h / 2)), tag, font=cf, fill=CHIP_TEXT, anchor="lm")
-        x += w + 10
-    y += chip_h + 24
-    # synopsis box with highlighted words
-    d.rounded_rectangle([sp(TEXT_X), sp(y), sp(TEXT_X + BOX_W), sp(y + box_h)], radius=sp(6),
-                        fill=BOX, outline=BOX_LINE, width=S)
-    sw = d.textlength(" ", font=rf) / S
-    for i, ln in enumerate(lines):
-        wx, wy = TEXT_X + pad, y + pad - 2 + i * lh
-        for word in ln.split():
-            h = word.strip(".,").lower() in hot
-            f = mf if h else rf
-            d.text((sp(wx), sp(wy)), word, font=f, fill=TERRA if h else BODY)
-            wx += d.textlength(word, font=f) / S + sw
-    y += box_h + 26
-    # watch-now button: gradient pill, label, long arrow
-    bw = 184
-    gradient_pill(img, (TEXT_X, y, TEXT_X + bw, y + btn_h), BTN1, BTN2)
-    d.text((sp(TEXT_X + 22), sp(y + btn_h / 2)), a["button_text"], font=font("Poppins-Bold.ttf", 13),
-           fill=WHITE, anchor="lm")
-    ax, ay = TEXT_X + bw - 24, y + btn_h / 2
-    line(d, [(ax - 38, ay), (ax, ay)], WHITE, 1.6)
-    line(d, [(ax - 6, ay - 5), (ax, ay), (ax - 6, ay + 5)], WHITE, 1.6)
-
-
-# -------------------------------------------------------------------- main
-def build(a=None):
-    a = a or source.ANIME
-    img = Image.new("RGB", (sp(W), sp(H)), WHITE)
-    d = ImageDraw.Draw(img)
-    draw_background(d)
-    draw_decor(d)
-    art, mask, h = art_panel()
-    art_y = (H - h) / 2                                    # art centred top-to-bottom
-    img.paste(art, (sp(ART_X), sp(art_y)), mask)
-    d = ImageDraw.Draw(img)
-    draw_header(d)
-    draw_content(img, d, a, art_y + h / 2)
-    return img.resize((W, H), Image.LANCZOS)
-    poster = build()
-    poster.save(source.OUTPUT_PNG)
-    poster.save(source.OUTPUT_JPG, quality=95)
-    print("Saved", source.OUTPUT_PNG, "and", source.OUTPUT_JPG)
+def render(meta, art, button="WATCH NOW", character=None):
+    art = art or default_art((150, 150, 220))
+    cv = Cv((255, 255, 255))
+    cv.photo(art, (0, 0, 470, 720), focus=(0.5, 0.2))
+    tint = accent_of(art, (150, 140, 230))
+    cv.tint((0, 0, 470, 720), mix(tint, (255, 255, 255), 0.55), 70)
+    cv.gradient((0, 520, 470, 720), (0, 0, 0), (0, 0, 0), False, 0, 230)
+    cv.text(30, 692, (meta.get("studio") or "Anime").upper()[:22], font("Poppins-Bold.ttf", 10), (255, 255, 255), "lm", track=1)
+    # top bar
+    nf = font("Poppins-Bold.ttf", 12)
+    cv.text(510, 46, "Home", nf, INK, "lm")
+    cv.rrect((510, 58, 548, 60), 1, fill=(226, 60, 70))
+    cv.text(580, 46, "Category", font("Poppins-Medium.ttf", 12), GREY, "lm")
+    cv.text(662, 46, "Anime", font("Poppins-Medium.ttf", 12), GREY, "lm")
+    cv.pill(800, 28, "Search on  " + (meta.get("genres") or ["Anime"])[0], font("Poppins-Medium.ttf", 10), fill=(240, 240, 244), ink=GREY, h=36, padx=26)
+    cv.ellipse((1196, 28, 1232, 64), fill=INK)
+    cv.ellipse((1207, 34, 1221, 48), fill=(255, 255, 255))
+    cv.ellipse((1203, 50, 1225, 68), fill=(255, 255, 255))
+    # title block
+    f, ls, sz = fit_title(meta["title"], "Poppins-Bold.ttf", 690, 52, 26, 2, upper=True)
+    y = cv.lines(530, 150, ls, f, INK, sz * 1.1)
+    cv.star(540, y + 20, 8, INK, 1.0)
+    cv.text(556, y + 20, score_text(meta), font("Poppins-Bold.ttf", 12), INK, "lm")
+    cv.text(630, y + 20, (meta.get("studio") or "ANIME").upper()[:24], font("Poppins-Bold.ttf", 12), GREY, "lm", track=1)
+    gf = font("Poppins-Medium.ttf", 11)
+    x = 530
+    for g in (meta.get("genres") or ["Anime"])[:3]:
+        x = cv.pill(x, y + 44, g, gf, outline=(90, 90, 100), ink=(40, 40, 46), h=26, padx=14) + 8
+    cv.text(x + 12, y + 57, "Avg Ratings:", font("Poppins-Bold.ttf", 12), INK, "lm")
+    cv.stars(x + 108, y + 57, meta.get("score"), r=8, fill=(244, 168, 36), empty=(215, 215, 222), gap=3)
+    cv.rrect((530, y + 92, 1240, y + 93.2), 0, fill=LINE)
+    y2 = cv.para(530, y + 118, (meta.get("desc") or "").upper(), font("Poppins-Medium.ttf", 10.5), GREY, 700, 6, 22)
+    cv.rrect((530, y2 + 12, 1240, y2 + 13.2), 0, fill=LINE)
+    by = y2 + 40
+    bx = cv.button(530, by, button, font("Poppins-ExtraBold.ttf", 11), INK, h=36, padx=24)
+    cv.rrect((bx + 14, by, bx + 50, by + 36), 18, fill=INK)
+    cv.poly([(bx + 26, by + 10), (bx + 38, by + 10), (bx + 38, by + 27), (bx + 32, by + 22), (bx + 26, by + 27)], (255, 255, 255))
+    cv.text(530, by + 66, f"{meta.get('eps') or '—'} EPISODES  ·  {meta.get('year') or '—'}  ·  {(meta.get('fmt') or 'TV').upper()}", font("Poppins-Medium.ttf", 9.5), GREY, track=1)
+    return cv.finish()
