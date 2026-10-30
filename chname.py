@@ -60,19 +60,25 @@ def _halves(name: str, upper: bool) -> tuple[str, str]:
 # at = where the text starts (native pixels of that poster; the logo spot)  ·  align: "l" or "r" (grows to the left)
 # size / track = font size and letter spacing in px  ·  ink / accent = that poster's own colours
 SPECS: dict[int, dict] = {
-    1: dict(font="Poppins-Bold.ttf", size=38, track=3.0, case="upper", at=(132, 88), ink=(85, 85, 85), accent=(224, 124, 134), maxw=700, ref=1920),
-    2: dict(font="Poppins-Bold.ttf", size=32, track=3.0, case="upper", at=(114, 65), ink=(85, 85, 85), accent=(176, 80, 160), maxw=700, ref=1920),
-    3: dict(font="Poppins-Bold.ttf", size=32, track=3.0, case="upper", at=(268, 65), ink=(85, 85, 85), accent=(220, 78, 130), maxw=560, ref=1920),
     4: dict(font="LilitaOne-Regular.ttf", size=36, track=1.5, case="upper", at=(114, 65), ink=(40, 41, 52), accent=(232, 38, 66), maxw=290, ref=1920),
     5: dict(font="LilitaOne-Regular.ttf", size=38, track=1.5, case="upper", at=(830, 172), ink=(40, 41, 52), accent=(158, 75, 87), maxw=620, ref=1920),
     7: dict(font="LilitaOne-Regular.ttf", size=36, track=1.5, case="upper", at=(114, 65), ink=(40, 41, 52), accent=(238, 160, 0), maxw=700, ref=1920),
     9: dict(font="BebasNeue-Regular.ttf", size=60, track=5.0, case="upper", at=(158, 101), ink=(255, 255, 255), accent=(229, 9, 20), maxw=700, ref=1920),
-    10: dict(font="Anton-Regular.ttf", size=46, track=3.0, case="upper", at=(1860, 62), align="r", ink=(14, 18, 58), accent=(240, 72, 120), maxw=380, ref=1920),
-    11: dict(font="Poppins-Bold.ttf", size=26, track=2.0, case="upper", at=(126, 43), ink=(42, 43, 56), accent=(232, 32, 63), maxw=500, ref=1280),
     12: dict(font="Kanit-ExtraBold.ttf", size=44, track=3.0, case="upper", at=(72, 78), ink=(255, 255, 255), accent=(150, 120, 255), maxw=700, ref=1920),
-    14: dict(font="Lora-Italic-Variable.ttf", size=34, track=0.6, case="keep", at=(640, 668), ink=(17, 55, 69), accent=(178, 96, 70), maxw=420, ref=1280),
+    # ---- nova styles: the logo spot is the empty top-left corner (style 18: top-right of its glass card) ----
+    1: dict(font="Poppins-Bold.ttf", size=30, track=2.0, case="upper", at=(60, 60), ink=(22, 26, 52), accent=(60, 92, 230), maxw=420, ref=1920),
+    2: dict(font="Poppins-Bold.ttf", size=30, track=2.0, case="upper", at=(60, 60), ink=(20, 20, 24), accent=(238, 38, 44), maxw=330, ref=1920),
+    3: dict(font="Poppins-Bold.ttf", size=30, track=2.0, case="upper", at=(60, 78), ink=(255, 255, 255), accent=(226, 36, 46), maxw=480, ref=1920),
+    6: dict(font="Poppins-Bold.ttf", size=30, track=2.0, case="upper", at=(90, 162), ink=(255, 255, 255), accent=(255, 150, 30), maxw=480, ref=1920),
+    10: dict(font="Poppins-Bold.ttf", size=30, track=2.0, case="upper", at=(36, 75), ink=(18, 18, 22), accent=(206, 40, 46), maxw=500, ref=1920),
+    11: dict(font="Poppins-Bold.ttf", size=30, track=2.0, case="upper", at=(60, 60), ink=(255, 255, 255), accent=(160, 110, 255), maxw=450, ref=1920),
+    14: dict(font="Poppins-Bold.ttf", size=30, track=2.0, case="upper", at=(45, 60), ink=(255, 255, 255), accent=(255, 200, 120), maxw=620, ref=1920),
+    15: dict(font="Poppins-Bold.ttf", size=30, track=2.0, case="upper", at=(60, 57), ink=(255, 255, 255), accent=(255, 200, 120), maxw=480, ref=1920),
+    16: dict(font="Poppins-Bold.ttf", size=30, track=2.0, case="upper", at=(45, 54), ink=(40, 50, 150), accent=(118, 84, 228), maxw=560, ref=1920),
+    17: dict(font="Poppins-Bold.ttf", size=30, track=2.0, case="upper", at=(66, 60), ink=(22, 26, 52), accent=(120, 120, 130), maxw=480, ref=1920),
+    18: dict(font="Poppins-Bold.ttf", size=30, track=2.0, case="upper", at=(1850, 78), ink=(255, 255, 255), accent=(120, 160, 255), maxw=560, ref=1920, align="r"),
 }
-OWN_BRAND = (6, 8, 13)           # these three draw the branding themselves (template header / lockup)
+OWN_BRAND = (8, 13)              # these two draw the branding themselves (template lockup)
 
 
 def _font_path(name: str) -> Path | None:

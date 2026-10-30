@@ -10,6 +10,7 @@ import config   # first: it prepares the environment the templates read
 import chnl
 import cmds
 import dataset
+import links
 
 logging.basicConfig(format="%(asctime)s %(levelname)s %(name)s: %(message)s",
                     level=config.LOG_LEVEL)
@@ -47,11 +48,12 @@ async def amain():
 
     app = Client("poster-bot", api_id=config.API_ID, api_hash=config.API_HASH, bot_token=config.BOT_TOKEN,
                  in_memory=True, parse_mode=enums.ParseMode.HTML, workers=16)
+    links.register(app)      # before cmds: while a link flow waits for text, these handlers must see it first
     chnl.register(app)       # before cmds: while a flow waits for text, these handlers must see it first
     cmds.register(app)
     await app.start()
     await cmds.post_start(app)
-    log.info("bot started - %d poster styles", len(dataset.POSTERS))
+    log.info("bot started - %d poster styles, link provider ready", len(dataset.POSTERS))
     await idle()
     await app.stop()
 

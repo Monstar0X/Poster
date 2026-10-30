@@ -1,9 +1,7 @@
-# pinned to the versions this bot is tested against (see AGENTS.md)
-kurigram==2.2.26
-TgCrypto==1.2.5
-pillow==13.0.0
-httpx==0.28.1
-requests==2.34.2
-aiohttp==3.14.5
-numpy==2.4.6          # 2.5+ needs Python >=3.12; the image is 3.11
-python-dotenv==1.2.4
+pillow
+httpx
+requests
+aiohttp
+kurigram
+numpy
+TgCrypto

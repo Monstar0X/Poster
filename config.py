@@ -4,20 +4,6 @@ import os
 import re
 from pathlib import Path
 
-BASE_DIR = Path(__file__).resolve().parent
-
-
-def _load_env_file() -> None:
-    """Load .env if python-dotenv is available (optional - real env vars always win)."""
-    try:
-        from dotenv import load_dotenv
-    except ImportError:
-        return
-    load_dotenv(BASE_DIR / ".env", override=False)
-
-
-_load_env_file()
-
 
 def _get(name: str, default: str = "") -> str:
     return os.environ.get(name, default).strip()
@@ -34,6 +20,8 @@ def _ids(name: str) -> set[int]:
     return {int(x) for x in re.split(r"[,\s]+", _get(name)) if x.isdigit()}
 
 
+BASE_DIR = Path(__file__).resolve().parent
+
 # ---------------------------------------------------------------- telegram (Kurigram)
 API_ID = _int("API_ID", "")                                  # https://my.telegram.org
 API_HASH = _get("API_HASH", "")
@@ -42,11 +30,15 @@ ALLOWED_USERS = _ids("ALLOWED_USERS")                       # comma separated id
 
 # ---------------------------------------------------------------- identity + staff
 BOT_NAME = _get("BOT_NAME", "Anime Poster Bot")
-ADMIN_ID = _int("ADMIN_ID", 0)                              # owner id, shown in /profile
+ADMIN_ID = _int("ADMIN_ID", 0)                              # owner id: link-provider admin panel, broadcast
+OWNER_ID = _int("OWNER_ID", 0) or ADMIN_ID                  # falls back to ADMIN_ID
 
 # ---------------------------------------------------------------- links + images (/start, /help)
-MAIN_CHANNEL_URL = _get("MAIN_CHANNEL_URL", "https://t.me/cantarellabots")
+MAIN_CHANNEL_URL = _get("MAIN_CHANNEL_URL") or _get("PUBLIC_ANIME_CHANNEL_URL", "https://t.me/cantarellabots")
 SUPPORT_URL = _get("SUPPORT_URL", "https://t.me/CantarellaBotschat")
+# link provider: fallback shown when a user is not subscribed to the force-sub channels
+PUBLIC_ANIME_CHANNEL_URL = _get("PUBLIC_ANIME_CHANNEL_URL") or MAIN_CHANNEL_URL
+LINK_EXPIRY_MINUTES = _int("LINK_EXPIRY_MINUTES", 5)        # expiring invite links live this long
 
 # /start and /help are sent as a photo, one picked at random from this list
 MENU_IMAGES = [
@@ -61,17 +53,17 @@ MENU_IMAGES = [
 # ---------------------------------------------------------------- posters
 BRAND_TOP = _get("BRAND_TOP", "ANI")                        # brand on styles 8 and 13
 BRAND_BOTTOM = _get("BRAND_BOTTOM", "CROX")
-USE_CHARACTER_PNG = _get("USE_CHARACTER_PNG", "1") != "0"   # styles 1, 2, 4, 5: try transparent fanart.tv PNGs
+USE_CHARACTER_PNG = _get("USE_CHARACTER_PNG", "1") != "0"   # styles 4, 5: try transparent fanart.tv PNGs
 USE_ANILIST_CUTOUT = _get("USE_ANILIST_CUTOUT", "0") == "1"  # also offer an AniList character cut-out (rembg). off = fanart.tv only
-FANART_CANDIDATES = _int("FANART_CANDIDATES", 15)           # how many fanart.tv PNGs to offer (styles 1, 2, 4, 5). was 6
-POSTER_CHOICES = _int("POSTER_CHOICES", 12)                 # most AniList posters to cycle through (styles 3, 6, 7, 9, 10, 11, 13, 14)
+FANART_CANDIDATES = _int("FANART_CANDIDATES", 15)           # how many fanart.tv PNGs to offer (styles 4, 5). was 6
+POSTER_CHOICES = _int("POSTER_CHOICES", 12)                 # most AniList posters to cycle through (poster styles)
 BANNER_CHOICES = _int("BANNER_CHOICES", 12)                 # most AniList banners to cycle through (styles 8, 12)
 
 # small art is grown to a "medium" size (aspect ratio kept, never shrunk). This is the working size
 # the poster is drawn from - it has nothing to do with the Telegram upload size.
-CHAR_MIN_HEIGHT = _int("CHAR_MIN_HEIGHT", 1400)             # transparent character PNGs (styles 1-7): at least this tall
-COVER_MIN_HEIGHT = _int("COVER_MIN_HEIGHT", 1350)           # portrait poster / cover art (styles 8-14)
-BANNER_MIN_WIDTH = _int("BANNER_MIN_WIDTH", 1920)           # landscape banner art (styles 8-14)
+CHAR_MIN_HEIGHT = _int("CHAR_MIN_HEIGHT", 1400)             # transparent character PNGs (styles 4, 5): at least this tall
+COVER_MIN_HEIGHT = _int("COVER_MIN_HEIGHT", 1350)           # portrait poster / cover art (poster styles)
+BANNER_MIN_WIDTH = _int("BANNER_MIN_WIDTH", 1920)           # landscape banner art (banner styles)
 # a character PNG that comes out short (wide / low image, e.g. a mecha with a long weapon) is grown - same ratio -
 # until it is at least CHAR_MEDIUM_FILL of the style's art height; it may use up to CHAR_WIDE_STRETCH x the normal width.
 try:

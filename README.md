@@ -1,18 +1,17 @@
-# 🎨 Anime Poster Studio Bot
+# 🎬 Anime Poster & Link Provider Bot
 
 <div align="center">
 
-[![Python Version](https://img.shields.io/badge/Python-3.11-3776AB?logo=python&logoColor=white)](https://www.python.org/)
+[![Python Version](https://img.shields.io/badge/Python-3.10%20%7C%203.11%20%7C%203.13-3776AB?logo=python&logoColor=white)](https://www.python.org/)
 [![Telegram](https://img.shields.io/badge/Telegram-Channel-2CA5E0?logo=telegram&logoColor=white)](https://t.me/cantarellabots)
 [![Support](https://img.shields.io/badge/Telegram-Support%20Chat-0088cc?logo=telegram&logoColor=white)](https://t.me/CantarellaBotschat)
 [![Library](https://img.shields.io/badge/Library-Kurigram%20%2F%20Pyrogram-blue)](https://github.com/Kurigram/Kurigram)
 [![Engine](https://img.shields.io/badge/Image%20Engine-Pillow-yellow)](https://python-pillow.org/)
 
-A Telegram bot that turns any anime into **14 ready-to-post poster / thumbnail styles**, straight from AniList.
+One Telegram bot that does two jobs: it turns anime metadata into **18 poster / thumbnail styles**, and it runs a
+**link provider** — users join your channels once, then pull fresh anime links whenever they want one.
 
-Send a title, tap a style, fine-tune it, and download the full-quality PNG — or push it straight to your channel.
-
-Every screen is a thumbnail photo with inline buttons and a way back home, so the whole thing feels like one app.
+Every screen is a thumbnail photo with inline buttons, so the whole thing feels like a single app.
 
 </div>
 
@@ -20,28 +19,33 @@ Every screen is a thumbnail photo with inline buttons and a way back home, so th
 
 ## ✨ What's inside
 
-| Feature | What it does |
-| :--- | :--- |
-| 🎨 **14 poster styles** | Full HD (1920×1080), HD (1280×720) and 1600×900 designs, rendered live. |
-| 🖼️ **Dynamic artwork** | Cycle transparent fanart.tv character cut-outs, AniList posters and banners right from the buttons. |
-| 🔥 **Trending** | One tap shows what AniList is buzzing about, ready to turn into a poster. |
-| ⚙️ **Fine-tune** | Swap the character / artwork, change the button text, add your channel branding. |
-| 📁 **Full-quality export** | Instant JPEG preview in chat, plus a lossless PNG on demand. |
-| 📣 **Direct to channel** | Attach a rich caption (formatting and custom emoji preserved) and inline URL buttons, preview, then post. |
+This project merges two systems into one bot:
 
-> **Out of scope on purpose:** the moderation suite (bans, mutes, warns, locks, filters, welcome messages,
-> night mode, logging) and the link-provider feature are **not** part of this bot. This is a poster studio only.
+| Half | What it does |
+| :--- | :--- |
+| 🎨 **Poster studio** | 18 poster / thumbnail styles from AniList + fanart.tv, with live previews, character and art switching, custom button text and channel branding, plus a one-tap "post to channel". |
+| 🔗 **Link provider** | Force-sub gate, expiring invite links, deep links, an admin panel and a broadcast tool. |
+
+> **Group management is intentionally out of scope.** The moderation suite from the original specification
+> (bans, mutes, warns, locks, filters, welcome messages, night mode, logging, …) is **not** part of this bot.
+> This is a poster + link-provider bot only.
 
 ---
 
-## 🕹️ How to use it
+## 🎨 Poster studio
 
-1. **Send an anime name** — or tap 🔥 **trending** to pick from what's hot right now.
-2. **Choose a style** — tap a number, or browse with 👀 **previews**.
-3. **Fine-tune it** — ◀ ▶ flips styles, ⚙️ **options** swaps the art, the button text and your branding.
-4. **Take it away** — 📁 **full quality file** for the PNG, 📣 **post to channel** to publish it.
+- **18 professional styles** at Full HD (1920×1080) and HD (1280×720). Styles 4, 5, 7, 8, 9, 12, 13 are the original set; 1, 2, 3, 6, 10, 11, 14-18 are the "nova" layouts from the Thumbnail- repo.
+- **Dynamic art selection** — cycle transparent character cut-outs from fanart.tv, or the alternative AniList posters and banners, straight from the buttons.
+- **Custom channel branding** — your channel name is rendered onto every poster in that poster's own typography and colours.
+- **Direct-to-channel publishing** — attach a rich caption (formatting and custom emoji preserved) and inline URL buttons, preview it, then send it to a channel you administer.
+- **High-quality export** — instant JPEG previews in chat, plus a `📁 full quality file` button for the lossless PNG.
 
-Every screen keeps a 🏠 **home** button, so you can never get stuck.
+## 🔗 Link provider
+
+- **Force-sub gate** — the bot only hands out links after the user has joined every channel on the force-sub list.
+- **Expiring links** — a fresh invite is created per request and expires after `LINK_EXPIRY_MINUTES`; if Telegram refuses, it falls back to the channel's stored or public link.
+- **Deep links** — `/start link_<ref>` hands out the invite for a specific channel, still behind the gate.
+- **Admin panel** — add / remove force-sub channels, broadcast to every user (formatting preserved), and read live stats.
 
 ---
 
@@ -49,10 +53,12 @@ Every screen keeps a 🏠 **home** button, so you can never get stuck.
 
 | Command | Description |
 | :--- | :--- |
-| `/start` | Home screen |
+| `/start` | Home screen: choose **poster studio** or **link provider** |
+| `/link` | Get an anime link (join the channels first) |
+| `/channels` | The force-sub channels you must join |
+| `/profile` | Your profile and how many links you have pulled |
 | `/poster <anime>` | Make a poster for the given anime |
-| `/styles` | Preview every poster style, one by one |
-| `/trending` | What's hot on AniList right now |
+| `/styles` | Preview every poster style |
 | `/help` | Command guide and support links |
 | `/addchnl` | Register **your** channel (bot must be full admin there) |
 | `/mychnls` | List your registered channels |
@@ -77,8 +83,7 @@ export BOT_TOKEN="123456:ABC-DEF..."
 python main.py
 ```
 
-The bot downloads its fonts on first start (into both `fonts/` and `Templates/fonts/`), so the very first
-run needs network access. To fetch them in advance:
+The bot downloads its fonts on first start. To fetch them in advance:
 
 ```bash
 python -c "import dataset; print('Missing fonts:', dataset.ensure_fonts())"
@@ -98,12 +103,15 @@ Create a `.env` file or set these in your deployment environment.
 | `API_HASH` | Telegram API Hash from [my.telegram.org](https://my.telegram.org) |
 | `BOT_TOKEN` | Bot token from [@BotFather](https://t.me/BotFather) |
 
-### 🤖 Identity
+### 🔗 Link provider
 
 | Variable | Description | Default |
 | :--- | :--- | :--- |
+| `ADMIN_ID` | Owner user id — unlocks the link-provider admin panel and broadcast | `0` |
+| `OWNER_ID` | Owner user id (falls back to `ADMIN_ID`) | `ADMIN_ID` |
+| `PUBLIC_ANIME_CHANNEL_URL` | Channel link used when a user is not subscribed | `MAIN_CHANNEL_URL` |
+| `LINK_EXPIRY_MINUTES` | How long a generated invite stays valid (`0` = permanent) | `5` |
 | `BOT_NAME` | Display name | `Anime Poster Bot` |
-| `ADMIN_ID` | Owner user id | `0` |
 
 ### 🗄️ Storage
 
@@ -150,22 +158,17 @@ docker run -d --name anime-bot --restart unless-stopped \
 A `Procfile` (`worker: python main.py`) is included for Heroku-style hosts. On Render / Koyeb / Railway set
 the start command to `python main.py` and `PORT=8080` to switch on the health-check server.
 
-The image deliberately uses **Python 3.11** (not the newest release) and pins every dependency, because the
-Kurigram/Pyrogram MTProto stack is best tested there. `numpy` is held below 2.5 for the same reason — 2.5+
-requires Python 3.12+. A `.dockerignore` keeps `.env`, session files and runtime data out of the image.
-
 ---
 
 ## 🧪 Tests
 
 ```bash
 pip install pytest
-python -m pytest test_ui.py -v
+python -m pytest test_links.py -v
 ```
 
-The suite covers the interface: every keyboard is checked for a way back home, the style grid is checked to
-list all 14 styles, and the inline-button router is driven with real callback data to prove each button
-reaches the right screen.
+The suite covers the link provider: the real JSON storage backend, the force-sub gate, link delivery with all
+its fallbacks, deep links, the keyboards and the handler wiring.
 
 ---
 
@@ -177,13 +180,15 @@ Poster/
 ├── config.py          # all environment settings
 ├── cmds.py            # poster studio: commands, style picker, poster buttons
 ├── chnl.py            # channel registration + 📣 post-to-channel flow
+├── links.py           # 🔗 link provider: gate, link generation, admin panel, broadcast
+├── linkstore.py       # link-provider storage (MongoDB or JSON)
 ├── chstore.py         # poster-studio channel storage (MongoDB or JSON)
 ├── dataset.py         # AniList + fanart.tv data, font download, render dispatch
 ├── chname.py          # channel branding typography
 ├── watermark.py       # watermark seal / verify tool
 ├── ui.py              # small-caps styling + button/keyboard helpers
-├── Templates/         # the 14 poster renderers
-└── test_ui.py         # interface + router tests
+├── Templates/         # the 18 poster renderers (+ nova_kit.py, the shared drawing kit of the nova styles)
+└── test_links.py      # link-provider tests
 ```
 
 ---

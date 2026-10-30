@@ -26,7 +26,7 @@ BASE_DIR = Path(__file__).resolve().parent
 TEMPLATES_DIR = BASE_DIR / "Templates"
 FONT_DIR = config.FONT_DIR
 
-# poster1-7 download Poppins here on first use; poster11/13/14 look in "fonts/"
+# poster4/5/7 download Poppins here on first use; poster13 and the nova styles look in "fonts/"
 FONT_DIR.mkdir(exist_ok=True)
 (TEMPLATES_DIR / "fonts").mkdir(exist_ok=True)         # poster9/10/12 hard-code this folder
 
@@ -35,13 +35,13 @@ ANILIST_URL = "https://graphql.anilist.co"
 
 BRAND_TOP = config.BRAND_TOP          # used by poster 8 and 13
 BRAND_BOTTOM = config.BRAND_BOTTOM
-USE_CHARACTER_PNG = config.USE_CHARACTER_PNG   # posters 1-7
+USE_CHARACTER_PNG = config.USE_CHARACTER_PNG   # posters 4, 5
 
 BUTTON_PRESETS = ["WATCH NOW", "WATCH TRAILER", "STREAM NOW", "PLAY NOW", "DOWNLOAD"]
 
 
 # ======================================================================
-# 0. fonts  (downloaded once; posters 8/11/13/14 do not fetch their own)
+# 0. fonts  (downloaded once; posters 8/13 and the nova styles do not fetch their own)
 # ======================================================================
 _GF = "https://raw.githubusercontent.com/google/fonts/main/ofl/"
 # (google-fonts folder, remote file name, local file name, folder(s) it must exist in)
@@ -146,21 +146,28 @@ class PosterStyle:
 
 
 POSTERS: dict[int, PosterStyle] = {p.id: p for p in [
-    PosterStyle(1, "Style 1", "1920x1080 · fanart.tv PNG (poster if none)", button=True, character=True),
-    PosterStyle(2, "Style 2", "1920x1080 · fanart.tv PNG (poster if none)", button=True, character=True),
-    PosterStyle(3, "Style 3", "1920x1080 · AniList poster", button=True),
+    # ---- kept from the first set ----
     PosterStyle(4, "Style 4", "1920x1080 · fanart.tv PNG (poster if none)", button=True, character=True),
     PosterStyle(5, "Style 5", "1920x1080 · fanart.tv PNG (poster if none)", button=True, character=True),
-    PosterStyle(6, "Style 6", "1920x1080 · AniList poster", button=True),
     PosterStyle(7, "Style 7", "1920x1080 · AniList poster", button=True),
     PosterStyle(8, "Style 8", "Brand lockup + info row, AniList banner", brand=True),
     PosterStyle(9, "Style 9", "Streaming-home look, AniList poster + match %"),
-    PosterStyle(10, "Style 10", "White + pink, big half-circle frame, AniList poster", button=True),
-    PosterStyle(11, "Style 11", "Light 1280x720, red block + AniList poster", button=True),
     PosterStyle(12, "Style 12", "Dark violet glow, AniList banner background"),
     PosterStyle(13, "Style 13", "Orange slash, AniList poster + rating cards", button=True, brand=True),
-    PosterStyle(14, "Style 14", "Peach/teal, AniList poster in an arched panel", button=True),
+    # ---- "nova" set (layouts from the Thumbnail- repo), 1920x1080 ----
+    PosterStyle(1, "Style 1", "Navy blob + star rating, character PNG (poster if none)", button=True, character=True),
+    PosterStyle(2, "Style 2", "Red / white, vertical genres + framed AniList poster", button=True),
+    PosterStyle(3, "Style 3", "Big banner image, red / white title + quote line", button=True),
+    PosterStyle(6, "Style 6", "Frosted glass card, huge title, character PNG (poster if none)", button=True, character=True),
+    PosterStyle(10, "Style 10", "White + red block, SYNOPSIS, character PNG (poster if none)", button=True, character=True),
+    PosterStyle(11, "Style 11", "Black page, gradient button, tall AniList poster", button=True),
+    PosterStyle(14, "Style 14", "White page + poster left, top bar, rating row, AniList poster", button=True),
+    PosterStyle(15, "Style 15", "Season hero, glass top bar + chips, AniList banner", button=True),
+    PosterStyle(16, "Style 16", "Indigo split, score ring + episodes, character PNG (poster if none)", button=True, character=True),
+    PosterStyle(17, "Style 17", "Mono diagonals, why-to-watch, character PNG (poster if none)", button=True, character=True),
+    PosterStyle(18, "Style 18", "Neon, two dark cards with trailer + info, AniList poster", button=True),
 ]}
+POSTERS = dict(sorted(POSTERS.items()))      # ids stay 1..18 with no gaps: the next / back buttons rely on that
 
 
 # ======================================================================
@@ -251,33 +258,6 @@ async def search_anime(query: str, limit: int = 6) -> list[dict]:
     async with httpx.AsyncClient(headers=HEADERS, timeout=20) as client:
         try:
             data = await _anilist(client, SEARCH_QUERY, {"search": query, "perPage": limit})
-        except NotFound:
-            return []
-    out = []
-    for m in (data.get("Page") or {}).get("media") or []:
-        out.append(dict(id=m["id"], title=display_title(m), year=m.get("seasonYear"),
-                        format=(m.get("format") or "").replace("_", " ")))
-    return out
-
-
-TRENDING_QUERY = """
-query ($perPage: Int) {
-  Page(perPage: $perPage) {
-    media(type: ANIME, sort: TRENDING_DESC, isAdult: false) {
-      id
-      title { romaji english native }
-      seasonYear
-      format
-    }
-  }
-}"""
-
-
-async def trending_anime(limit: int = 10) -> list[dict]:
-    """What AniList is buzzing about right now -> [{id, title, year, format}, ...]"""
-    async with httpx.AsyncClient(headers=HEADERS, timeout=20) as client:
-        try:
-            data = await _anilist(client, TRENDING_QUERY, {"perPage": limit})
         except NotFound:
             return []
     out = []
@@ -412,12 +392,12 @@ async def load_anime(anilist_id: int) -> Anime:
 
 # ----------------------------------------------------------------------
 # which image each style uses - and ONLY that one gets loaded
-#   1, 2, 4, 5                      fanart.tv transparent PNG   (no PNG found -> AniList poster)
-#   3, 6, 7, 9, 10, 11, 13, 14      AniList poster
-#   8, 12                           AniList banner              (no banner -> AniList poster)
+#   1, 4, 5, 6, 10, 16, 17          fanart.tv transparent PNG   (no PNG found -> AniList poster)
+#   2, 7, 9, 11, 13, 14, 18         AniList poster (album)
+#   3, 8, 12, 15                    AniList banner (one big image)
 # ----------------------------------------------------------------------
-PNG_STYLES = {1, 2, 4, 5}
-BANNER_STYLES = {8, 12}
+PNG_STYLES = {1, 4, 5, 6, 10, 16, 17}      # single-character PNG styles (fanart.tv); no PNG -> the album poster
+BANNER_STYLES = {3, 8, 12, 15}              # one big banner image
 
 
 def art_kind(style_id: int) -> str:
@@ -527,7 +507,7 @@ async def ensure_art(a: Anime, style_id: int, opts: dict | None = None) -> None:
     if kind == "png":
         await _ensure_character(a)                              # fanart.tv only
         idx = o.get("char", 0)
-        if not (0 <= idx < len(a.characters)):                  # no PNG (or "cover card" picked) -> AniList poster
+        if not (0 <= idx < len(a.characters)) or style_id in NOVA_STYLES:   # no PNG (or "cover card") -> AniList poster; nova styles also use it as background
             await _need_image(a, "cover")
         return
     items = _art_items(a, kind)
@@ -722,7 +702,7 @@ def _sources():
 # 6. adapters  (AniList record -> what each template wants)
 # ======================================================================
 def _simple_meta(a: Anime) -> dict:
-    """poster1-7"""
+    """poster4 / 5 / 7"""
     r = a.raw
     return dict(title=a.title, genres=r.get("genres") or [], description=r.get("description") or "",
                 score=_score(r))
@@ -865,6 +845,7 @@ def char_state(a: Anime, idx: int) -> tuple[int, str]:
 
 
 def _render_1_7(n, a, o):
+    """styles 4, 5 (fanart.tv PNG) and 7 (AniList poster)"""
     if n == 7:
         ensure_assets()
     mod = _template(n)
@@ -926,15 +907,6 @@ def _render_aniraw(n, a, o):
     return img.convert("RGB")
 
 
-def _render_10(n, a, o):
-    """Style 10 = Templates/poster10.py (white + pink half-circle frame); takes a custom button text."""
-    mod = _template(10)
-    buf = mod.create_poster(a.raw, _art_bytes(a, 10, o), None, button_text=o["button"])
-    img = Image.open(buf)
-    img.load()
-    return img.convert("RGB")
-
-
 def _save_tmp(img: Image.Image, tmp: str, name: str) -> str:
     p = os.path.join(tmp, name)
     img.save(p, "PNG")
@@ -943,25 +915,6 @@ def _save_tmp(img: Image.Image, tmp: str, name: str) -> str:
 
 def _tags_upper(raw, n=3):
     return [g.upper() for g in (raw.get("genres") or [])[:n]]
-
-
-def _render_11(n, a, o):
-    mod, r = _template(n), a.raw
-    cover = _pil(_art_bytes(a, n, o)) or Image.new("RGB", (460, 650), (60, 60, 70))
-    syn = clean_text(r.get("description"), 250)
-    eps = r.get("episodes")
-    season = " ".join(x for x in ((r.get("season") or "").upper(), str(_year(r) or "")) if x)
-    info = " · ".join(x for x in (season, f"{eps} EPISODES" if eps else "") if x) or "ANIME"
-    tf = mod.get_font("Poppins-Bold.ttf", 66)                 # same font the template draws with
-    l1, l2 = (wrap_to_width(a.title, lambda t: tf.getlength(t) / mod.SCALE + 4, 735, 2) + [""])[:2]
-    anime = dict(season_info=info, title_line1=l1, title_line2=l2,
-                 studio=(_studio(r) or "ANIME").upper(), tags=_tags_upper(r, 3) or ["ANIME"],
-                 highlight_words=pick_highlights(syn), synopsis=syn, button_text=o["button"])
-    with _SOURCE_LOCK, tempfile.TemporaryDirectory() as tmp:
-        _SOURCE.POSTER_SOURCE = _save_tmp(cover, tmp, "cover.png")
-        _SOURCE.POSTER_CROP = (0, 0, 1280, 720)               # whole image (coords are relative)
-        _SOURCE.ANIME = anime
-        return mod.build_poster(anime).convert("RGB")
 
 
 def _render_13(n, a, o):
@@ -996,23 +949,40 @@ def _render_13(n, a, o):
         return mod.build(anime).convert("RGB")
 
 
-def _render_14(n, a, o):
-    mod, r = _template(n), a.raw
-    cover = _pil(_art_bytes(a, n, o)) or Image.new("RGB", (460, 650), (60, 60, 70))
-    syn = clean_text(r.get("description"), 200)
-    tf = mod.font("Lora-Italic-Variable.ttf", 76, 700)
-    title_lines = wrap_to_width(a.title, lambda t: tf.getlength(t) / mod.S, 580, 3)
-    anime = dict(title_lines=title_lines, tags=_tags_upper(r, 3) or ["ANIME"],
-                 highlight_words=pick_highlights(syn), synopsis=syn, button_text=o["button"])
-    with _SOURCE_LOCK, tempfile.TemporaryDirectory() as tmp:
-        _SOURCE.ART_SOURCE = _save_tmp(cover, tmp, "cover.png")
-        _SOURCE.ART_CROP = _center_crop(cover, 0.85, top_bias=0.6)
-        _SOURCE.ANIME = anime
-        return mod.build(anime).convert("RGB")
+def _nova_meta(a: Anime) -> dict:
+    """what every Templates/poster{1,2,3,6,10,11,14-18}.py `render(meta, art, button, character)` needs"""
+    r = a.raw
+    t = r.get("title") or {}
+    return dict(title=a.title, native=t.get("native") or "", genres=(r.get("genres") or [])[:4],
+                desc=clean_text(r.get("description"), 420), score=_score(r), eps=r.get("episodes"),
+                studio=_studio(r), year=_year(r), season=(r.get("season") or "").lower(),
+                fmt=(r.get("format") or "").replace("_", " "), status=(r.get("status") or "").replace("_", " "),
+                runtime=r.get("duration"), chars=_char_names(r))
 
 
-_RENDERERS = {**{i: _render_1_7 for i in range(1, 8)}, 8: _render_8, 9: _render_aniraw, 10: _render_10,
-              11: _render_11, 12: _render_aniraw, 13: _render_13, 14: _render_14}
+def _char_names(r: dict) -> list:
+    out = []
+    for e in ((r.get("characters") or {}).get("edges") or []):
+        nm = (((e.get("node") or {}).get("name") or {}).get("full"))
+        if nm:
+            out.append(nm)
+    return out[:4]
+
+
+def _render_nova(n, a, o):
+    """the 'nova' styles: one self-contained template each (Templates/nova_kit.py is the shared drawing kit).
+    PNG styles get the chosen character PNG (+ the cover as background / fallback); the others the poster / banner."""
+    mod = _template(n)
+    if n in PNG_STYLES:
+        idx = o.get("char", 0)
+        ch = a.characters[idx][1] if 0 <= idx < len(a.characters) else None
+        return mod.render(_nova_meta(a), a.cover, button=o["button"], character=ch)
+    return mod.render(_nova_meta(a), _pil(_art_bytes(a, n, o)), button=o["button"])
+
+
+NOVA_STYLES = (1, 2, 3, 6, 10, 11, 14, 15, 16, 17, 18)
+_RENDERERS = {4: _render_1_7, 5: _render_1_7, 7: _render_1_7, 8: _render_8, 9: _render_aniraw, 12: _render_aniraw,
+              13: _render_13, **{i: _render_nova for i in NOVA_STYLES}}
 
 
 # ======================================================================
@@ -1032,25 +1002,12 @@ def default_options(style_id: int) -> dict:
     return dict(button=BUTTON_PRESETS[0], brand=(BRAND_TOP, BRAND_BOTTOM), char=0, pic=0)
 
 
-_BRAND6_LOCK = threading.Lock()          # style 6 gets its header text by swapping a constant of the shared template
-
-
 def _render_sync(style_id: int, a: Anime, opts: dict) -> Rendered:
     o = {**default_options(style_id), **(opts or {})}
     name = chname.clean(o.get("chname"))                 # the user's channel branding - on EVERY poster
-    if name and style_id in (8, 13):                     # the template's brand lockup carries it
+    if name and style_id in chname.OWN_BRAND:            # the template's brand lockup carries it
         o["brand"] = chname.split_brand(name)
-    if name and style_id == 6:                           # the template's header text carries it
-        mod = _template(6)
-        with _BRAND6_LOCK:
-            old = mod.BRAND
-            mod.BRAND = name.upper()
-            try:
-                img = _RENDERERS[style_id](style_id, a, o)
-            finally:
-                mod.BRAND = old
-    else:
-        img = _RENDERERS[style_id](style_id, a, o)
+    img = _RENDERERS[style_id](style_id, a, o)
     img = img.convert("RGB")
     if name and style_id not in chname.OWN_BRAND:        # every other style: written in that poster's own look
         img = chname.draw_brand(img, name, style_id)

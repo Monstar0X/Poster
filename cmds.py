@@ -16,6 +16,7 @@ from pyrogram.types import BotCommand, InputMediaPhoto
 import chstore
 import config
 import dataset
+import links
 from dataset import BUTTON_PRESETS, POSTERS
 from ui import BLUE, GREEN, RED, bq, btn, kb, sc
 
@@ -46,70 +47,67 @@ def mention(user) -> str:
 
 
 def start_text(user) -> str:
-    return bq(f"✨ {sc('welcome to')} <b>{sc('poster studio')}</b>, " + mention(user) + "!") + "\n" + \
-        bq(sc("🎨 ") + f"<b>{N_STYLES}</b>" + sc(" handcrafted styles\n"
-              "🖼️ any anime, straight from anilist\n"
-              "⚡ ready in seconds · full-quality png")) + "\n" + \
-        bq(sc("✍️ just send me an anime name to begin\n"
-              "or tap a button below 👇"))
+    return bq(sc("bakkaaa...") + mention(user) + "\n" +
+              sc("iam your advance thumbnail creation bot for anime. Iam waiting for you baby ~ alya")) + "\n" + \
+        bq(sc(f"🎨 poster studio · turn any anime into {N_STYLES} thumbnails\n"
+              "🔗 link provider · join our channels, then pull a fresh anime link"))
 
 
 ABOUT_TEXT = bq(
-    sc("🌸 about this bot") + "\n\n" +
-    sc(f"i turn anilist data into {N_STYLES} ready-to-post thumbnails.\n"
-       "send an anime name, pick the right title, then flip through every style until one clicks.\n\n"
-       "🎛️ tweak the button text, swap the artwork, add your channel branding — then download the full-quality png.\n\n"
-       "✨ what makes me different\n"
-       "· every style is a real design, not a filter\n"
-       "· live artwork pulled fresh from anilist\n"
-       "· one tap to post straight to your channel\n\n"
-       "📚 data · anilist   ⚙️ engine · kurigram"))
+    sc("🌸 about me") + "\n\n" +
+    sc(f"i turn anilist data into {N_STYLES} different thumbnails / posters.\n"
+       "send me an anime name, pick the right result and flip through every style.\n"
+       "change the button text, the poster / banner or your channel branding, then grab the full quality file.\n\n"
+       "i am also a link provider: join our channels once and pull a fresh anime link whenever you need one.\n\n"
+       "data · anilist\nlibrary · kurigram"))
 
 HELP_CMDS = [
     ("/start", "wake me up"),
+    ("/link", "get an anime link (join our channels first)"),
+    ("/channels", "the channels you must join"),
     ("/poster naruto", "make a poster of any anime"),
-    ("/styles", "preview every style, one by one"),
-    ("/trending", "what's hot on anilist right now"),
+    ("/styles", "see every style with a preview"),
+    ("/profile", "your profile & how many links you pulled"),
     ("/help", "show this message"),
-    ("/addchnl", "add your channel (i must be a full admin there)"),
-    ("/mychnls", "manage your channels"),
+    ("/addchnl", "add your channel (i must be full admin there)"),
+    ("/mychnls", "your channels"),
     ("/removechnl", "remove a channel"),
 ]
 
 
 def help_text() -> str:
     lines = "\n".join(f"<code>{c}</code> ➜ {sc(d)}" for c, d in HELP_CMDS)
-    return bq(sc("📖 everything i can do") + "\n\n" + lines) + "\n" + bq(
-        sc("💡 tip · you don't need a command — just send an anime name and i'll search it for you."))
+    return bq(sc("📖 all commands") + "\n\n" + lines) + "\n" + bq(
+        sc("or just send an anime name and i will search it for you."))
 
 
 def pick_style_text(query: str | None = None) -> str:
-    head = sc("🎨 pick your style")
+    head = sc("🎨 choose a poster style")
     if query:
         head += "\n" + sc("for ") + f"“{html.escape(query)}”"
     lines = "\n".join(f"<b>{s.id}</b> ➜ {sc(s.blurb)}" for s in POSTERS.values())
-    return bq(head) + "\n" + bq(sc("tap a number to select it 👇") + "\n\n" + lines, expandable=True)
+    return bq(head) + "\n" + bq(lines, expandable=True)
 
 
 def style_info(n: int) -> str:
     s = POSTERS[n]
     feats = []
     if s.character:
-        feats.append("swap the character art (◀ ▶)")
-    else:
-        feats.append(f"swap the {dataset.art_kind(s.id)} (◀ ▶)")
+        feats.append("fanart.tv PNG change (◀ ▶), poster if none")
+    if not s.character:
+        feats.append(f"{dataset.art_kind(s.id)} change (◀ ▶)")
     if s.button:
         feats.append("custom button text")
-    feats.append("your channel branding")
+    feats.append("channel branding")
     return bq(f"🎨 {sc('style')} <b>{n}</b> / {N_STYLES}\n{sc(s.blurb)}\n\n"
-              f"{sc('you can')} ➜ {sc(', '.join(feats) or 'nothing else')}")
+              f"{sc('options')} ➜ {sc(', '.join(feats) or 'none')}")
 
 
 # ======================================================================
 # keyboards
 # ======================================================================
 def start_keyboard():
-    return kb([btn("🎨 poster studio", "studio", color=BLUE), btn("🔥 trending", "tr", color=GREEN)],
+    return kb([btn("🎨 poster studio", "studio", color=BLUE), btn("🔗 link provider", "lk_home", color=GREEN)],
               [btn("ℹ️ about", "ab", color=BLUE), btn("📖 help", "hp", color=GREEN)])
 
 
@@ -117,13 +115,12 @@ def help_keyboard(back: bool = False):
     rows = [[btn("📢 main channel", url=MAIN_CHANNEL_URL, color=BLUE),
              btn("💬 support", url=SUPPORT_URL, color=GREEN)]]
     if back:
-        rows.append([btn("🏠 home", "home", color=RED)])
+        rows.append([btn("🔙 back", "home", color=RED)])
     return kb(*rows)
 
 
 def about_keyboard():
-    return kb([btn("🎨 start creating", "studio", color=BLUE)],
-              [btn("🏠 home", "home", color=RED)])
+    return kb([btn("🔙 back", "home", color=RED)])
 
 
 def styles_keyboard(current: int | None = None, back: bool = False):
@@ -137,7 +134,8 @@ def styles_keyboard(current: int | None = None, back: bool = False):
     if row:
         rows.append(row)
     last = [btn("👀 previews", f"sv:{current or 1}", color=GREEN)]
-    last.append(btn("🏠 home", "home", color=RED))
+    if back:
+        last.insert(0, btn("🔙 back", "bk", color=RED))
     rows.append(last)
     return kb(*rows)
 
@@ -148,7 +146,6 @@ def viewer_keyboard(n: int):
          btn(f"{n}/{N_STYLES}", "noop", raw=True),
          btn(f"next {STYLE_NEXT}", f"sv:{n % N_STYLES + 1}", color=BLUE)],
         [btn("✅ use this style", f"st:{n}", color=GREEN)],
-        [btn("🎨 all styles", "sl0", color=BLUE), btn("🏠 home", "home", color=RED)],
     )
 
 
@@ -159,7 +156,6 @@ def result_keyboard(style: int):
         [btn("⚙️ options", "op", color=BLUE), btn("🔄 redo", "rg", color=GREEN)],
         [btn("📁 full quality file", "fl", color=BLUE), btn("🔍 new anime", "na", color=GREEN)],
         [btn("📣 post to channel", "ch_post", color=GREEN)],
-        [btn("🏠 home", "home", color=RED)],
     )
 
 
@@ -183,12 +179,12 @@ def options_keyboard(style: int, opts: dict, anime=None):
     brand = opts.get("chname") or ""                                # the user's channel branding: on EVERY poster
     rows.append([btn(sc("🏷 branding: ") + (brand[:22] if brand else sc("not set")), "ch_brand", raw=True, color=BLUE),
                  btn("✏️ edit", "ch_brand", color=GREEN)])
-    rows.append([btn("🔙 back to poster", "ob", color=BLUE), btn("🏠 home", "home", color=RED)])
+    rows.append([btn("🔙 back", "ob", color=RED)])
     return kb(*rows)
 
 
 def cancel_keyboard():
-    return kb([btn("🎨 styles", "sl0", color=BLUE), btn("🏠 home", "home", color=RED)])
+    return kb([btn("🎨 styles", "sl0", color=BLUE), btn("✖️ cancel", "cx", color=RED)])
 
 
 # ======================================================================
@@ -205,16 +201,15 @@ def _caption(ud: dict, rendered) -> str:
     cap = f"🎬 <b>{html.escape(a.title)}</b>\n" + sc(f"🎨 style {ud['style']} · {rendered.size[0]}×{rendered.size[1]}")
     if POSTERS[ud["style"]].character and a.characters:
         n, label = dataset.char_state(a, ud["opts"].get("char", 0))
-        cap += "\n" + sc("🧍 art: ") + html.escape(label)
+        cap += "\n" + sc("🧍 art: ") + html.escape(label) + "\n" + sc("⚙ options → ◀ ▶ to change character")
         if a.main_name and not label.startswith("main character"):
             cap += "\n" + sc("⭐ main character: ") + html.escape(a.main_name)
     elif not POSTERS[ud["style"]].character:
         kind = dataset.art_kind(ud["style"])
         _, label, _, _ = dataset.art_state(a, ud["style"], ud["opts"].get("pic"))
-        cap += "\n" + sc(f"🖼 {kind}: ") + html.escape(label)
+        cap += "\n" + sc(f"🖼 {kind}: ") + html.escape(label) + "\n" + sc(f"⚙ options → ◀ ▶ to change the {kind}")
     if ud["opts"].get("chname"):
         cap += "\n" + sc("🏷 branding: ") + html.escape(ud["opts"]["chname"])
-    cap += "\n\n" + sc("◀ ▶ change style · ⚙️ options to fine-tune")
     return bq(cap)
 
 
@@ -408,6 +403,7 @@ async def cmd_start(client, message):
     ud = _ud(message.from_user.id)
     ud["await"] = None
     ud.pop("pending", None)
+    await links.touch_start(client, message)
     await _reply_with_image(message, start_text(message.from_user), start_keyboard())
 
 
@@ -418,10 +414,6 @@ async def cmd_help(client, message):
 async def cmd_styles(client, message):
     ud = _ud(message.from_user.id)
     await open_viewer(client, message.chat.id, ud.get("style") or 1)
-
-
-async def cmd_trending(client, message):
-    await _run_trending(client, message.from_user.id, message.chat.id)
 
 
 async def cmd_poster(client, message):
@@ -472,7 +464,7 @@ async def _run_search(client, user_id: int, chat_id: int, query: str, source_msg
     ud = _ud(user_id)
     ud["await"] = None
     q = html.escape(query)
-    text = bq(sc("🔎 searching for ") + f"“{q}”…")
+    text = bq(sc("🔎 searching ") + f"“{q}”…")
     if source_msg is not None and not source_msg.photo:
         status = source_msg
         await status.edit_text(text)
@@ -489,46 +481,15 @@ async def _run_search(client, user_id: int, chat_id: int, query: str, source_msg
     if not results:
         ud["await"] = "name"
         await status.edit_text(bq(sc("😕 nothing found for ") + f"“{q}”\n" +
-                                  sc("try another spelling, or the japanese / romaji title.")),
+                                  sc("send another spelling or the japanese / romaji title.")),
                                reply_markup=cancel_keyboard())
         return
     rows = []
     for r in results:
         label = " · ".join(str(x) for x in (r["title"], r["year"], r["format"]) if x)
         rows.append([btn(label[:60], f"pk:{r['id']}", raw=True, color=BLUE)])
-    rows.append([btn("🔍 search again", "na", color=BLUE), btn("🏠 home", "home", color=RED)])
-    await status.edit_text(bq(sc("🔎 results for ") + f"“{q}”\n" + sc("tap the right one 👇")),
-                           reply_markup=kb(*rows))
-
-
-async def _run_trending(client, user_id: int, chat_id: int, source_msg=None):
-    """🔥 trending: the shows AniList is buzzing about right now."""
-    ud = _ud(user_id)
-    ud["await"] = None
-    text = bq(sc("🔥 checking what's trending…"))
-    if source_msg is not None and not source_msg.photo:
-        status = source_msg
-        await status.edit_text(text)
-    else:
-        status = await client.send_message(chat_id, text)
-    try:
-        results = await dataset.trending_anime(10)
-    except Exception:
-        log.exception("trending failed")
-        await status.edit_text(bq(sc("⚠️ anilist isn't answering right now. try again in a moment.")),
-                               reply_markup=kb([btn("🔁 try again", "tr", color=GREEN)]))
-        return
-    if not results:
-        await status.edit_text(bq(sc("😕 nothing trending right now — send me an anime name instead.")),
-                               reply_markup=cancel_keyboard())
-        return
-    rows = []
-    for i, r in enumerate(results, 1):
-        label = " · ".join(str(x) for x in (r["title"], r["year"], r["format"]) if x)
-        rows.append([btn(f"{i}. {label}"[:60], f"pk:{r['id']}", raw=True, color=BLUE)])
-    rows.append([btn("🔍 search an anime", "na", color=BLUE), btn("🏠 home", "home", color=RED)])
-    await status.edit_text(bq(sc("🔥 trending on anilist") + "\n" + sc("tap one to make a poster 👇")),
-                           reply_markup=kb(*rows))
+    rows.append([btn("✖️ cancel", "cx", color=RED)])
+    await status.edit_text(bq(sc("🔎 results for ") + f"“{q}” " + sc("➜ pick one:")), reply_markup=kb(*rows))
 
 
 async def on_text(client, message):
@@ -553,14 +514,15 @@ async def on_pick(client, cq):
     ud = _ud(cq.from_user.id)
     await cq.answer(sc("loading…"))
     if not ud.get("style"):
-        ud["style"] = 1                       # sensible default so a pick always renders
-    await _edit(cq.message, bq(sc("⏳ fetching the artwork…")))
+        await _edit(cq.message, bq(sc("session expired ➜ send /start again.")))
+        return
+    await _edit(cq.message, bq(sc("⏳ fetching data and artwork…")))
     try:
         ud["anime"] = await dataset.load_anime(int(cq.data.split(":")[1]))
     except Exception:
         log.exception("load_anime failed")
         await _edit(cq.message, bq(sc("⚠️ couldn't load that title. try another result.")),
-                    kb([btn("🔍 new anime", "na", color=GREEN), btn("🏠 home", "home", color=RED)]))
+                    kb([btn("🔍 new anime", "na", color=GREEN)]))
         return
     ud["await"] = None
     ud["opts"]["char"] = 0                                          # new anime -> first character candidate
@@ -595,12 +557,6 @@ async def on_button(client, cq):
     if data == "hp":
         await cq.answer()
         await _edit(msg, help_text(), help_keyboard(back=True))
-        return
-
-    # ---- trending
-    if data == "tr":
-        await cq.answer()
-        await _run_trending(client, uid, cid, source_msg=msg)
         return
 
     # ---- style previews
@@ -638,7 +594,7 @@ async def on_button(client, cq):
         await cq.answer(sc("cancelled"))
         ud["await"] = None
         ud.pop("pending", None)
-        await _edit(msg, start_text(cq.from_user), start_keyboard())
+        await _edit(msg, pick_style_text(), styles_keyboard(ud.get("style")))
         return
     if data == "na":                                               # new anime -> name listener
         await cq.answer()
@@ -681,6 +637,7 @@ async def on_button(client, cq):
         slug = re.sub(r"[^a-z0-9]+", "_", ud["anime"].title.lower()).strip("_")[:40] or "poster"
         await client.send_document(cid, _bio(last.png, f"{slug}_style{style}.png"), file_name=f"{slug}_style{style}.png")
     elif data == "op":
+        s = POSTERS[style]
         await cq.answer()
         await msg.edit_reply_markup(options_keyboard(style, opts, ud["anime"]))
     elif data == "ob":
@@ -736,9 +693,11 @@ async def on_button(client, cq):
 async def post_start(app):
     await app.set_bot_commands([
         BotCommand("start", "Wake me up"),
+        BotCommand("link", "Get an anime link"),
+        BotCommand("channels", "Force-sub channels"),
         BotCommand("poster", "Make a poster: /poster Naruto"),
         BotCommand("styles", "Preview every poster style"),
-        BotCommand("trending", "What's hot on AniList right now"),
+        BotCommand("profile", "Your profile & link count"),
         BotCommand("help", "All commands + support"),
         BotCommand("addchnl", "Add your channel (I must be full admin)"),
         BotCommand("mychnls", "Your channels"),
@@ -758,7 +717,6 @@ def register(app):
     app.add_handler(MessageHandler(cmd_start, filters.command("start")))
     app.add_handler(MessageHandler(cmd_help, filters.command("help")))
     app.add_handler(MessageHandler(cmd_styles, filters.command("styles")))
-    app.add_handler(MessageHandler(cmd_trending, filters.command("trending")))
     app.add_handler(MessageHandler(cmd_poster, filters.command("poster")))
     app.add_handler(CallbackQueryHandler(on_button))
     app.add_handler(MessageHandler(on_text, filters.private & filters.create(_not_command)))

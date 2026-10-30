@@ -16,4 +16,3 @@ venv/
 .env
 *.session
 *.session-journal
-Templates/assets/
